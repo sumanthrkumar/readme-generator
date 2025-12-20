@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+from services.github_service import fetch_repo_content
 
 app = FastAPI()
 
@@ -26,9 +27,22 @@ class ReadMeRequest(BaseModel):
 def read_heartbeat():
     return {"status": "Server is running", "message": "Hello from FastAPI"}
 
-@app.get("/build_documentation")
-def build_documentation():
-    return {"status": "Server is running", "message": "Hello from FastAPI"}
+@app.post("/build_documentation")
+def generate_readme(request: ReadMeRequest):
+    print(f"Fetching repo: {request.repo_url}")
+
+    code_context = fetch_repo_content(request.repo_url)
+
+    if isinstance(code_context, dict) and "error" in code_context:
+        return {"status": "error", "message": code_context["error"]}
+    
+    print(f"Fetched code context length: {len(code_context)} characters")
+
+
+    return {
+        "status": "success", 
+        "context_preview": code_context[:500] + "..." # Show first 500 chars
+    }
 
 @app.post("/test")
 def test_endpoint(request: ReadMeRequest):
