@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from services.github_service import fetch_repo_content
+from services.llm_service import generate_readme_text
 
 app = FastAPI()
 
@@ -36,12 +37,20 @@ def generate_readme(request: ReadMeRequest):
     if isinstance(code_context, dict) and "error" in code_context:
         return {"status": "error", "message": code_context["error"]}
     
-    print(f"Fetched code context length: {len(code_context)} characters")
+    print(f"Fetched {len(code_context)} chars of code. Sending to Gemini...")
+
+    readme_text = generate_readme_text(code_context, request.notes)
+
+    output_file_path = "generated_README.md"
+    with open(output_file_path, "w") as f:
+        f.write(readme_text)
+
+    print(f"Generated README.md saved to {output_file_path}")
 
 
     return {
-        "status": "success", 
-        "context_preview": code_context[:500] + "..." # Show first 500 chars
+        "status": "success",
+        "readme": f"Generated README.md saved to {output_file_path}"
     }
 
 @app.post("/test")
