@@ -1,8 +1,8 @@
-# AI-Powered README Generator
+# AI-Powered README Generator Backend
 
-This project is an AI-powered application designed to automate the creation of professional `README.md` files for GitHub repositories. It provides a simple web interface for users to submit a repository URL and optional notes, which are then processed by a FastAPI backend. The backend fetches code context from the specified repository and leverages the Google Gemini AI model to generate a comprehensive and well-structured `README.md` file.
+This project is an AI-powered backend application designed to automate the creation of professional `README.md` files for GitHub repositories. It provides a FastAPI endpoint that receives a repository URL and optional notes as an HTTP request. The backend then fetches code context from the specified repository and leverages the Google Gemini AI model to generate a comprehensive and well-structured `README.md` file.
 
-The application aims to streamline the documentation process for developers, making it easier to generate high-quality project descriptions, features, installation guides, and usage instructions based on the actual codebase.
+The application aims to streamline the documentation process for developers by intelligently analyzing codebase content and generating high-quality project descriptions, features, installation guides, and usage instructions.
 
 ## Features
 
@@ -10,20 +10,12 @@ The application aims to streamline the documentation process for developers, mak
 *   **AI-Powered Content:** Utilizes the Google Gemini API to intelligently analyze code context and generate relevant documentation.
 *   **Customization with Notes:** Allows users to provide additional notes or specific instructions to guide the AI during README generation.
 *   **GitHub Integration:** Fetches repository content and file structure directly from GitHub using the GitHub API.
-*   **Multi-language Support:** Extracts code context from various file types, including Python (`.py`), JavaScript (`.js`), TypeScript (`.tsx`), Markdown (`.md`), JSON (`.json`), HTML (`.html`), and CSS (`.css`).
-*   **User-Friendly Interface:** A simple and intuitive web frontend built with React for submitting repository details.
-*   **Scalable Backend:** A FastAPI backend provides a robust and efficient API for handling requests.
+*   **Multi-language Code Context:** Extracts code context from various file types, including Python (`.py`), JavaScript (`.js`), TypeScript (`.tsx`), Markdown (`.md`), JSON (`.json`), HTML (`.html`), and CSS (`.css`).
+*   **Robust FastAPI Backend:** Provides an efficient and scalable API for handling requests.
 
 ## Technologies Used
 
-The project is built using a modern tech stack, combining a React frontend with a Python FastAPI backend.
-
-### Frontend
-
-*   **React 19:** A JavaScript library for building user interfaces.
-*   **Vite:** A fast build tool that provides a rapid development environment.
-*   **TypeScript:** A superset of JavaScript that adds static typing.
-*   **CSS:** For styling the user interface.
+The project is a backend application built with Python FastAPI.
 
 ### Backend
 
@@ -36,12 +28,11 @@ The project is built using a modern tech stack, combining a React frontend with 
 
 ## Installation
 
-To set up and run this project locally, you will need to install both the backend and frontend components.
+To set up and run this project locally, you will need to install the backend components.
 
 ### Prerequisites
 
 *   **Python 3.8+:** For the FastAPI backend.
-*   **Node.js & npm (or yarn):** For the React frontend.
 *   **Git:** To clone the repository.
 
 ### 1. Clone the Repository
@@ -84,23 +75,9 @@ GEMINI_API_KEY="YOUR_GEMINI_API_KEY"
 *   **`GITHUB_TOKEN`**: Generate a Personal Access Token from your GitHub settings (Settings -> Developer settings -> Personal access tokens -> Tokens (classic)). Ensure it has at least `repo` scope to access private repositories or `public_repo` scope for public ones.
 *   **`GEMINI_API_KEY`**: Obtain an API key from [Google AI Studio](https://aistudio.google.com/app/apikey).
 
-### 3. Frontend Setup
-
-Navigate to the `frontend` directory:
-
-```bash
-cd ../frontend
-```
-
-#### Install Node.js Dependencies
-
-```bash
-npm install
-```
-
 ## Usage
 
-Follow these steps to run the application and generate a README.
+Follow these steps to run the backend application and generate a README.
 
 ### 1. Start the Backend Server
 
@@ -111,37 +88,39 @@ uvicorn main:app --reload
 ```
 The backend server will typically run on `http://localhost:8000`.
 
-### 2. Start the Frontend Development Server
+### 2. Generate a README via API Request
 
-From the `frontend` directory:
+Once the backend server is running, you can send an HTTP POST request to the `/build_documentation` endpoint.
+
+**Endpoint:** `POST http://localhost:8000/build_documentation`
+
+**Request Body (JSON):**
+
+```json
+{
+  "repo_url": "https://github.com/octocat/Spoon-Knife",
+  "notes": "This is a simple demo project. Please highlight the main purpose and technologies used."
+}
+```
+
+You can use a tool like `curl`, Postman, Insomnia, or any HTTP client to make this request.
+
+**Example using `curl`:**
 
 ```bash
-npm run dev
+curl -X POST "http://localhost:8000/build_documentation" \
+     -H "Content-Type: application/json" \
+     -d '{
+           "repo_url": "https://github.com/octocat/Spoon-Knife",
+           "notes": "This is a simple demo project. Please highlight the main purpose and technologies used."
+         }'
 ```
-The frontend application will typically open in your browser at `http://localhost:5173`.
 
-### 3. Generate a README
-
-1.  Open your web browser and navigate to the frontend application (e.g., `http://localhost:5173`).
-2.  Enter the URL of a GitHub repository (e.g., `https://github.com/octocat/Spoon-Knife`) into the "Enter Repo URL" field.
-3.  Optionally, add any specific notes or instructions in the "Additional Notes" textarea to guide the README generation.
-4.  *(Note: The current frontend UI requires development to include a submit button and display mechanisms. Once implemented, submitting the form will trigger the backend process.)*
-5.  After the backend processes the request, the generated `README.md` file will be saved in the `backend` directory as `generated_README.md`.
+Upon successful processing, the generated `README.md` content will be saved as `generated_README.md` in the `backend` directory. The API response will also confirm the save location.
 
 ## Development Notes
 
-*   **Frontend-Backend Communication:** The frontend will need to make a POST request to `http://localhost:8000/build_documentation` with the repository URL and notes.
-*   **CORS Configuration:** The backend's `main.py` includes CORS settings configured to allow requests from `http://localhost:5174`. If your frontend runs on a different port (e.g., `http://localhost:5173` as is default for Vite), you might need to adjust the `origins` list in `backend/main.py` or configure your frontend to proxy API requests. For this README, it is assumed frontend calls `http://localhost:8000` from `http://localhost:5173`, and the backend `CORS` should be configured accordingly.
-
-    ```python
-    # backend/main.py
-    origins = [
-        "http://localhost:5173", # Update this to match your frontend's actual port
-        "http://127.0.0.1:5173",
-    ]
-    ```
-
-*   **Frontend UI Enhancement:** The `DataInput.tsx` component needs further development to handle input state changes, implement a submission button, display loading states, show errors, and render/download the generated README.
+*   **CORS Configuration:** The `backend/main.py` file includes CORS settings configured to allow requests from `http://localhost:5174`. If you intend to connect a client application from a different origin, you may need to adjust the `origins` list in `backend/main.py`.
 
 ## Project Structure
 
@@ -153,20 +132,8 @@ The frontend application will typically open in your browser at `http://localhos
 │   │   ├── github_service.py       # Handles fetching content from GitHub
 │   │   └── llm_service.py          # Interacts with Google Gemini API for README generation
 │   ├── .env.example                # Example for backend environment variables
-│   └── generated_README.md         # Output file for generated READMEs
-│
-├── frontend/
-│   ├── public/
-│   ├── src/
-│   │   ├── App.css
-│   │   ├── App.tsx                 # Main React component
-│   │   ├── DataInput.tsx           # Component for user input (Repo URL, Notes)
-│   │   ├── index.css
-│   │   └── main.tsx                # Frontend entry point
-│   ├── index.html                  # HTML template for the frontend
-│   ├── package.json                # Frontend dependencies and scripts
-│   ├── tsconfig.json               # TypeScript configuration
-│   └── vite.config.ts              # Vite configuration
+│   ├── generated_README.md         # Output file for generated READMEs
+│   └── venv/                       # Python virtual environment (if created)
 │
 └── README.md                       # This file
 ```
